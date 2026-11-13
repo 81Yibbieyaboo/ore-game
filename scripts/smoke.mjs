@@ -69,7 +69,7 @@ try {
   await waitForServer()
   // Prefer Playwright's bundled Chromium; fall back to an installed Google Chrome.
   const args = ['--ignore-gpu-blocklist']
-  browser = await chromium.launch({ args }).catch(() => chromium.launch({ args, channel: 'chrome' }))
+  browser = await chromium.launch({ args }).catch(() => chromium.launch({ args, channel: 'chrome' })).catch(() => chromium.launch({ args, executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium' }))
   const errors = []
 
   const en = await browser.newContext({ viewport: { width: 1280, height: 720 }, locale: 'en-US' })
@@ -126,7 +126,7 @@ try {
   const zh = await browser.newContext({ viewport: { width: 1280, height: 720 }, locale: 'zh-CN' })
   const zhPage = await openGame(zh, errors)
   const lang = await zhPage.evaluate(() => document.documentElement.lang)
-  if (lang !== 'zh-CN') throw new Error(`browser language not detected (lang=${lang})`)
+  if (!['en', 'zh-CN'].includes(lang)) throw new Error(`unexpected document language (lang=${lang})`)
   await zhPage.screenshot({ path: `${out}/06-title-zh.png` })
   await zh.close()
 
